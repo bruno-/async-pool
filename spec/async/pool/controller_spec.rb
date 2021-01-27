@@ -130,6 +130,42 @@ RSpec.describe Async::Pool::Controller, timeout: 1 do
 			end
 		end
 	end
+	
+	context "with a resource that has '#eql?'" do
+		class EqlResource < Async::Pool::Resource
+			def reusable?
+				true
+			end
+			
+			# EqlResource.new.eql?(EqlResource.new) is always true
+			def eql?(other)
+				true
+			end
+			
+			def hash
+				1
+			end
+		end
+		
+		subject do
+			described_class.wrap do
+				EqlResource.new
+			end
+		end
+		
+		before do
+			object1 = subject.acquire
+			object2 = subject.acquire
+			subject.release(object1)
+			subject.release(object2)
+		end
+		
+		it "acquires existing resources" do
+			subject.acquire
+			subject.acquire
+			expect(subject.size).to eq 2
+		end
+	end
 end
 
 RSpec.describe Async::Pool::Controller, timeout: 1 do

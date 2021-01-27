@@ -33,9 +33,9 @@ module Async
 			end
 			
 			def initialize(constructor, limit: nil)
-				@resources = {}
+				@resources = {}.compare_by_identity
 				
-				@available = Set.new
+				@available = Set.new.compare_by_identity
 				@notification = Async::Notification.new
 				
 				@limit = limit
